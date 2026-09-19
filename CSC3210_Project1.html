@@ -114,6 +114,44 @@ function isPointInOctagon(point, boundary) {
   return true;
 }
 
+// Configuration for how finely the octagon is subdivided into small triangles
+const gridResolution = 150;
+
+// Function that builds a dense array of small triangles in the octagon's interior 
+function buildFineTriangleMesh(octagon, boundary, resolution) {
+  // Array that stores every small triangle inside of the octagon boundary, each as a group of 3 {x, y} points
+  const triangles = [];
+  // Width and heigh of one square grid cell that is based on the bounding box of the octagon and specified resolution
+  const cellSize = (2 * octagon.radius) / resolution;
+
+  // Iterates over every cell in a resolution x resolution grid that covers the octagon's bounding box
+  for (let i = 0; i < resolution; i++) {
+    for (let j = 0; j < resolution; j++) {
+      // Calculates the cell's 4 corners
+      const x0 = octagon.centerX - octagon.radius + i * cellSize;
+      const x1 = x0 + cellSize;
+      const y0 = octagon.centerY - octagon.radius + j * cellSize;
+      const y1 = y0 + cellSize;
+      
+      // Calculates the cell's center point given the previous coordinates
+      const center = {
+        x: (x0 + x1) / 2,
+        y: (y0 + y1) / 2
+      };
+
+      // Keeps a cell only if the center falls inside of the octagon, and splits the square cell into two triangles
+      if (isPointInOctagon(center, boundary)) {
+        // Each triangle is stored as an array of 3 vertexes
+        triangles.push([{x: x0, y: y0}, {x: x1, y: y0}, {x: x0, y: y1}]);
+        triangles.push([{x: x1, y: y0}, {x: x1, y: y1}, {x: x0, y: y1}]);
+      } 
+    }
+  }
+  return triangles;
+}
+
+const fineTriangles = buildFineTriangleMesh(octagon, octagonBoundary, gridResolution);
+
 // 4. Initialize the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setClearColor(0x111111, 1.0); // Dark grey background
