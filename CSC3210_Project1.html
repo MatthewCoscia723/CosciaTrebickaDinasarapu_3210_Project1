@@ -47,7 +47,7 @@ function computeOctagonBoundary(octagon) {
 
 const octagonBoundary = computeOctagonBoundary(octagon);
 
-// Function that creates and adds to the scene the background octagon's mesh
+// Function that creates the background octagon's mesh
 function createOctagonBackgroundMesh() {
   const geometry = new THREE.BufferGeometry();
 
@@ -92,8 +92,27 @@ function createOctagonBackgroundMesh() {
   return new THREE.Mesh(geometry, material);
 }
 
+// Creates instance of the octagon background mesh and adds it to the scene
 const octagonBackgroundMesh = createOctagonBackgroundMesh();
 scene.add(octagonBackgroundMesh);
+
+// Function that checks whether a given point is inside of the octagon
+function isPointInOctagon(point, boundary) {
+  for (let i = 0; i < boundary.length; i++) {
+    const current = boundary[i];
+    const next = boundary[(i + 1) % boundary.length];
+
+    // Compute the cross product of the edge vector (current -> next) and the vector from current to the test point
+    const cross = (next.x - current.x) * (point.y - current.y) - (next.y - current.y) * (point.x - current.x);
+
+    // If the cross product is negative, then the point is outside of the edge, returns false
+    if (cross < 0) {
+      return false;
+    }
+  }
+  // Returns true if the point is inside all of the edges 
+  return true;
+}
 
 // 4. Initialize the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
