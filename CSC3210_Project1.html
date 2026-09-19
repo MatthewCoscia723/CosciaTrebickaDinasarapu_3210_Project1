@@ -28,7 +28,8 @@ scene.add(camera);
 const octagon = {
   centerX: 0, 
   centerY: 0,
-  radius: 1.75, 
+  radius: 1.75,
+  rotationOffset: Math.PI / 8
 };
 
 // Function that generates the 8 corner points of the octagon evenly around a circle
@@ -36,7 +37,7 @@ function computeOctagonBoundary(octagon) {
   const points = [];
   // For each of the 8 points of a 2D octagon, calculates x and y coordinates using a cosine and sine waves and an angle
   for (let i = 0; i < 8; i++) {
-    const angle = i * (2 * Math.PI / 8);
+    const angle = i * (2 * Math.PI / 8) + octagon.rotationOffset;
     const x = octagon.centerX + octagon.radius * Math.cos(angle);
     const y = octagon.centerY + octagon.radius * Math.sin(angle);
     points.push({x, y});
@@ -46,33 +47,25 @@ function computeOctagonBoundary(octagon) {
 
 const octagonBoundary = computeOctagonBoundary(octagon);
 
-// 3. Define Custom Triangle Geometry using BufferGeometry
-function createOctagonOutlineMesh() {
+// Function that creates and adds to the scene the background octagon's mesh
+function createOctagonBackgroundMesh() {
   const geometry = new THREE.BufferGeometry();
-  
-  // Define 3D positions for 3 vertices [x, y, z]
-  // All vertices are relative to and will interact with the origin (0,0)
-  const vertices = new Float32Array([
-    // Triangle 1
-    0.00, 0.00, 0.0,   1.75, 0.75, 0.0,   0.75, 1.75, 0.0,
-    // Triangle 2
-    0.00, 0.00, 0.0,   0.75, 1.75, 0.0,   -0.75,  1.75, 0.0,
-    // Triangle 3
-    0.00, 0.00, 0.0,   -0.75, 1.75, 0.0,   -1.75,  0.75, 0.0,
-    // Triangle 4
-    0.00, 0.00, 0.0,   -1.75, 0.75, 0.0,   -1.75, -0.75, 0.0,
-    // Triangle 5
-    0.00, 0.00, 0.0,   -1.75, -0.75, 0.0,   -0.75, -1.75, 0.0,
-    // Triangle 6
-    0.00, 0.00, 0.0,   -0.75, -1.75, 0.0,   0.75, -1.75, 0.0,
-    // Triangle 7
-    0.00, 0.00, 0.0,   0.75, -1.75, 0.0,   1.75, -0.75, 0.0,
-    // Triangle 8
-    0.00, 0.00, 0.0,   1.75, -0.75, 0.0,   1.75,  0.75, 0.0
-  ]);
 
-  geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-  geometry.computeVertexNormals();
+  // Array that stores the coordinates of every triangle vertex needed to visually make the octagon background
+  const vertexList = [];
+
+  // Builds one triangle made up of 3 vertexes, 8 times
+  for (let i = 0; i < octagonBoundary.length; i++) {
+    const current = octagonBoundary[i];
+    const next = octagonBoundary[(i + 1) % octagonBoundary.length];
+
+    vertexList.push(octagon.centerX, octagon.centerY, 0);
+    vertexList.push(current.x, current.y, 0);
+    vertexList.push(next.x, next.y, 0);
+  }
+
+  // Converts the vertex list array into a more workable Float32Array
+  const vertices = new Float32Array(vertexList);
 
   // Define per-vertex RGB colors (range 0.0 - 1.0)
   const colors = new Float32Array([
@@ -99,8 +92,8 @@ function createOctagonOutlineMesh() {
   return new THREE.Mesh(geometry, material);
 }
 
-const octagonOutlineMesh = createOctagonOutlineMesh();
-scene.add(octagonOutlineMesh);
+const octagonBackgroundMesh = createOctagonBackgroundMesh();
+scene.add(octagonBackgroundMesh);
 
 // 4. Initialize the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
