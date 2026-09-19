@@ -152,6 +152,30 @@ function buildFineTriangleMesh(octagon, boundary, resolution) {
 
 const fineTriangles = buildFineTriangleMesh(octagon, octagonBoundary, gridResolution);
 
+// IMPORTANT: Configuration for how many puzzle pieces (and therefore seed points) to generate
+const pieceCount = 10;
+
+// Function that generates pieceCount number of random points inside of the octagon, which are used to determine which triangles belong to which piece
+function generateSeedPoints(octagon, boundary, count) {
+  // Array that stores the acceptable seed points, where one seed point correspond to one puzzle piece
+  const seeds = [];
+
+  // Keeps generating candidate seed points until enough have been found
+  while (seeds.length < count) {
+    // Generates a random candidate point that is within the octagon's bounding box
+    const candidate = {
+      x: octagon.centerX + (Math.random() * 2 - 1) * octagon.radius,
+      y: octagon.centerY + (Math.random() * 2 - 1) * octagon.radius
+    };
+
+    // Keeps the candidate seed point only if it lands inside of octagon, otherwise the loop runs again
+    if (isPointInOctagon(candidate, boundary)) {
+      seeds.push(candidate);
+    }
+  }
+  return seeds;
+}
+
 // 4. Initialize the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setClearColor(0x111111, 1.0); // Dark grey background
