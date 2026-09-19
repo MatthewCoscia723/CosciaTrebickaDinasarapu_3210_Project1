@@ -176,6 +176,64 @@ function generateSeedPoints(octagon, boundary, count) {
   return seeds;
 }
 
+// Helper function that calculates the centroid, which is the average position of triangle's 3 corner points
+function getTriangleCentroid(triangle) {
+  const x = (triangle[0].x + triangle[1].x + triangle[2].x) / 3;
+  const y = (triangle[0].y + triangle[1].y + triangle[2].y) / 3;
+  return {x, y};
+}
+
+// Helper function that calculates the distance between 2 points
+function getDistance(a, b) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// Function that calculates the closest seed point to the specified point
+function findNearestSeedIndex(point, seeds) {
+  // Assumes to start that 0 is the closest index, is used as a starting guess to compare to
+  let closestIndex = 0;
+  // The distance to the current closestIndex, used as a benchmark to compare to
+  let closestDistance = getDistance(point, seeds[0]);
+  
+  // Compares every remaining seed point starting at index 1 against the current closest index
+  for (let i = 1; i < seeds.length; i++) {
+    const newDistance = getDistance(point, seeds[i]);
+    // If the current seed is closer than the current best, it becomes the new closest guess
+    if (newDistance < closestDistance) {
+      closestDistance = newDistance;
+      closestIndex = i;
+    }
+  }
+  // Returns the index of whichever seeds ends up as the closest to the specified point after checking them all
+  return closestIndex;
+}
+
+// Generates the seed points that the fine triangles will be grouped around
+const seedPoints = generateSeedPoints(octagon, octagonBoundary, pieceCount);
+
+// Function that sorts the fine triangles into a bucket that corresponds to a seed point that is based on which seed each triangle's centroid is closest to
+function groupTrianglesBySeed(triangles, seeds) {
+  // Array that stores one group of triangles per seed point
+  const groups = [];
+
+  // Fills groups with empty arrays and makes them ready to sort triangles into
+  for (let i = 0; i < seeds.length; i++) {
+    groups.push([]);
+  }
+
+  // For each triangle, finds the centroid, uses that to calculate the nearest seed index, and then adds the triangle into that seed point's group
+  for (let j = 0; j < triangles.length; j++) {
+    const centroid = getTriangleCentroid(triangles[j]);
+    const nearestSeed = findNearestSeedIndex(centroid, seeds);
+    groups[nearestSeed].push(triangles[j]);
+  }
+
+  // Returns the completed collection of sorted groups
+  return groups;
+}
+
 // 4. Initialize the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setClearColor(0x111111, 1.0); // Dark grey background
