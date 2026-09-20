@@ -378,9 +378,10 @@ renderer.setClearColor(0x111111, 1.0); // Dark grey background
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
-renderer.domElement.addEventListener("click", click)
+renderer.domElement.addEventListener("mousedown", hold)
+renderer.domElement.addEventListener("mousemove", move)
 
-function click(event)
+function hold(event)
 {
   mouse.x = (event.offsetX / renderer.domElement.clientWidth) * 2 - 1;
   mouse.y = -(event.offsetY / renderer.domElement.clientHeight) * 2 + 1;
@@ -397,16 +398,39 @@ function click(event)
   let intersections = raycaster.intersectObjects(objects);
   if (intersections.length > 0)
   {
+    selectedPiece = intersections[0].object;
     console.log("Piece clicked");
+    console.log("Selected Piece:", selectedPiece);
   }
   else
   {
+    selectedPiece = null;
     console.log("Nothing clicked");
   }
 }
 
-// Renders the frame
-renderer.render(scene, camera);
+function move(event)
+{
+  if (selectedPiece == null)
+  {
+    return;
+  }
+
+  mouse.x = (event.offsetX / renderer.domElement.clientWidth) * 2 - 1;
+  mouse.y = -(event.offsetY / renderer.domElement.clientHeight) * 2 + 1;
+
+  selectedPiece.position.x = mouse.x * 5;
+  selectedPiece.position.y = mouse.y * 3;
+}
+
+// Animates the frame
+function animate()
+{
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+
+animate();
     </script>
 </body>
 </html>
