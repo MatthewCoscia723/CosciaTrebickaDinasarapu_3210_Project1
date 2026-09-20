@@ -160,6 +160,9 @@ const fineTriangles = buildFineTriangleMesh(octagon, octagonBoundary, gridResolu
 // IMPORTANT: Configuration for how many puzzle pieces (and therefore seed points) to generate
 const pieceCount = 15;
 
+// Max distance a puzzle can be form its home position to snap into place.
+const snapThreshold = 0.15;
+
 // Function that generates pieceCount number of random points inside of the octagon, which are used to determine which triangles belong to which piece
 function generateSeedPoints(octagon, boundary, count) {
   // Array that stores the acceptable seed points, where one seed point corresponds to one puzzle piece
