@@ -371,6 +371,9 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 // Initialize as having not selected a piece
 let selectedPiece = null;
+// Offset needed so pieces don't flick immediately off hold
+let clickOffsetX = 0;
+let clickOffsetY = 0;
 
 // Initializes the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -380,11 +383,12 @@ renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 renderer.domElement.addEventListener("mousedown", hold)
 renderer.domElement.addEventListener("mousemove", move)
+renderer.domElement.addEventListener("mouseup", release)
 
 function hold(event)
 {
-  mouse.x = (event.offsetX / renderer.domElement.clientWidth) * 2 - 1;
-  mouse.y = -(event.offsetY / renderer.domElement.clientHeight) * 2 + 1;
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
 
@@ -399,13 +403,13 @@ function hold(event)
   if (intersections.length > 0)
   {
     selectedPiece = intersections[0].object;
-    console.log("Piece clicked");
-    console.log("Selected Piece:", selectedPiece);
+    // This remembers the specific place the piece was first grabbed at
+    clickOffsetX = selectedPiece.position.x - intersections[0].point.x;
+    clickOffsetY = selectedPiece.position.y - intersections[0].point.y;
   }
   else
   {
     selectedPiece = null;
-    console.log("Nothing clicked");
   }
 }
 
@@ -416,11 +420,23 @@ function move(event)
     return;
   }
 
-  mouse.x = (event.offsetX / renderer.domElement.clientWidth) * 2 - 1;
-  mouse.y = -(event.offsetY / renderer.domElement.clientHeight) * 2 + 1;
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-  selectedPiece.position.x = mouse.x * 5;
-  selectedPiece.position.y = mouse.y * 3;
+  raycaster.setFromCamera(mouse, camera);
+
+  let distance = -raycaster.ray.origin.z / raycaster.ray.direction.z;
+
+  let point = raycaster.ray.direction.clone().multiplyScalar(distance);
+  point.add(raycaster.ray.origin);
+
+  selectedPiece.position.x = point.x + clickOffsetX;
+  selectedPiece.position.y = point.y + clickOffsetY;
+}
+
+function release(event)
+{
+  selectedPiece = null;
 }
 
 // Animates the frame
