@@ -262,8 +262,24 @@ function createPieceMesh(triangleGroup, color) {
   return new THREE.Mesh(geometry, material);
 }
 
+// Class that represents a single puzzle piece, where each piece contains an internal id, mesh, home position, and whether or not it is in the right location
+class PuzzlePiece {
+  constructor(id, mesh) {
+    this.id = id;
+    this.mesh = mesh;
+    this.homePosition = {
+      x: 0,
+      y: 0
+    };
+    this.isPlaced = true;
+  }
+}
+
 // Groups the fine triangles into one bucket per seed point, forming the raw shape of each puzzle piece
 const triangleGroups = groupTrianglesBySeed(fineTriangles, seedPoints);
+
+// Array that stores every PuzzlePiece object, one per generated piece
+const puzzlePieces = [];
 
 // Builds and adds one mesh per piece group to the scene, each with its own randomly generated color
 for (let i = 0; i < triangleGroups.length; i++) {
@@ -271,6 +287,9 @@ for (let i = 0; i < triangleGroups.length; i++) {
   const pieceMesh = createPieceMesh(triangleGroups[i], color);
   pieceMesh.position.z = 0.01; // Slightly in front of the background mesh, avoids z-fighting
   scene.add(pieceMesh);
+
+  const piece = new PuzzlePiece(i, pieceMesh);
+  puzzlePieces.push(piece);
 }
 
 // Initializes the WebGL Renderer
