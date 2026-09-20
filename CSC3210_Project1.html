@@ -404,6 +404,15 @@ function checkWin()
   return true;
 }
 
+// Sound effect for starting the puzzle game
+const gameStartSound = new Audio("sounds/game-start.mp3");
+let gameStartSoundPlayed = false;
+const clickSound = new Audio("sounds/piece-click.wav");
+const correctSound = new Audio("sounds/correct.wav");
+const wrongSound = new Audio("sounds/wrong.mp3");
+const victorySound = new Audio("sounds/victory.wav");
+
+
 // Initialize the raycasters (for mouse) and mouse variables
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
@@ -435,6 +444,14 @@ function hold(event)
   {
     return;
   }
+
+  if (gameStartSoundPlayed == false) 
+  {
+    gameStartSound.currentTime = 0.55;
+    gameStartSound.play();
+    gameStartSoundPlayed = true;
+  }
+
   // Conversions to Three.js coordinates
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -459,6 +476,8 @@ function hold(event)
     // This remembers the specific place the piece was first grabbed at
     clickOffsetX = selectedPiece.position.x - intersections[0].point.x;
     clickOffsetY = selectedPiece.position.y - intersections[0].point.y;
+    clickSound.currentTime = 0;
+    clickSound.play();
   }
   else
   {
@@ -502,11 +521,19 @@ function release()
 
         if (didSnap == true) 
         {
+          correctSound.currentTime = 0;
+          correctSound.play();
           if (checkWin()) 
           {
+            victorySound.currentTime = 0;
+            victorySound.play();
             console.log("You Win!");
             victoryAnimation = true;
           }
+        }
+        else {
+          wrongSound.currentTime = 0;
+          wrongSound.play();
         }
         break;
       }
