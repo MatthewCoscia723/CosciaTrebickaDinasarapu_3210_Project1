@@ -292,14 +292,69 @@ for (let i = 0; i < triangleGroups.length; i++) {
   puzzlePieces.push(piece);
 }
 
-// Randomly move each piece to a random position on the board
-for (let i = 0; i < puzzlePieces.length; i++)
+// Randomly move each starting piece to a random position on the board without overlap
+function RandomizeInitialPieces()
 {
-  puzzlePieces[i].mesh.position.x = Math.random() * 8 - 4
-  puzzlePieces[i].mesh.position.y = Math.random() * 5.5 - 2.75
+  // Storage for the bounding boxes
+  let boxes = [];
+  // Goes through every puzzle piece in the game
+  for (let i = 0; i < puzzlePieces.length; i++)
+  {
+    let piece = puzzlePieces[i];
+    let goodPosition = false;
 
-  puzzlePieces[i].isPlaced = false;
+    // Three.js method for calculating the bounding box of each piece
+    piece.mesh.geometry.computeBoundingBox();
+    let box = piece.mesh.geometry.boundingBox
+
+    // Randomly try positions until a good position (non overlapping with hexagon or other pieces) is found
+    while(!goodPosition)
+    {
+      // Start with a random position (adjusted integers hand-chosen)
+      let x = Math.random() * 6 - 3;
+      let y = Math.random() * 4 - 2;
+
+      piece.mesh.position.x = x;
+      piece.mesh.position.y = y;
+
+      // Gets the corners of the bounding box for the piece
+      let corners = [
+      {x: x + box.min.x, y: y + box.min.y},
+      {x: x + box.min.x, y: y + box.max.y},
+      {x: x + box.max.x, y: y + box.min.y},
+      {x: x + box.max.x, y: y + box.max.y}
+                    ];
+    // Assume position is valid until we test it's not
+    goodPosition = true;
+    // If any corner of the bounding box is in the octagon, it's not a good position
+    for (let j = 0; j < corners.length; j++)
+    {
+      if (isPointInOctagon(corners[j], octagonBoundary))
+      {
+        goodPosition = false;
+      }
+    }
+    // Check if a certain piece's box overlaps with any other piece's box
+    for (let j = 0; j < boxes.length && goodPosition; j++)
+      {
+        let other = boxes[j];
+        if (x + box.min.x < other.maxX && x + box.max.x > other.minX && y + box.min.y < other.maxY && y + box.max.y > other.minY)
+        {
+          goodPosition = false;
+        }
+      }
+      // If all checks are passed, move the piece and save bounding box for future checks
+      if (goodPosition)
+      {
+        boxes.push({minX: x + box.min.x, maxX: x + box.max.x, minY: y + box.min.y, maxY: y + box.max.y});
+      }
+    }
+    // Make sure piece's initial position is tracked as not placed correctly.
+    piece.isPlaced = false; 
+  }
 }
+// Calls the method to randomize each piece position.
+RandomizeInitialPieces();
 
 // Initializes the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
