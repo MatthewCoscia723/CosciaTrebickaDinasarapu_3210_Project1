@@ -490,7 +490,16 @@ function release()
     {
       if (puzzlePieces[i].mesh === selectedPiece) 
       {
-        trySnapPiece(puzzlePieces[i]);
+        const didSnap = trySnapPiece(puzzlePieces[i]);
+
+        if (didSnap == true) 
+        {
+          if (checkWin()) 
+          {
+            console.log("You Win!");
+            // Start victory animation here
+          }
+        }
         break;
       }
     }
