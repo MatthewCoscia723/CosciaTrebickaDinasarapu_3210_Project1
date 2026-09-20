@@ -305,7 +305,7 @@ function RandomizeInitialPieces()
 
     // Three.js method for calculating the bounding box of each piece
     piece.mesh.geometry.computeBoundingBox();
-    let box = piece.mesh.geometry.boundingBox
+    let box = piece.mesh.geometry.boundingBox;
 
     // Randomly try positions until a good position (non overlapping with hexagon or other pieces) is found
     while(!goodPosition)
@@ -355,6 +355,12 @@ function RandomizeInitialPieces()
 }
 // Calls the method to randomize each piece position.
 RandomizeInitialPieces();
+
+// Initialize the raycasters (for mouse) and mouse variables
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+// Initialize as having not selected a piece
+let selectedPiece = null;
 
 // Initializes the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
