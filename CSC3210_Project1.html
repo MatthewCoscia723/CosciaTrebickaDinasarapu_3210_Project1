@@ -271,7 +271,7 @@ class PuzzlePiece {
       x: 0,
       y: 0
     };
-    this.isPlaced = true;
+    this.isPlaced = false;
   }
 }
 
@@ -290,6 +290,15 @@ for (let i = 0; i < triangleGroups.length; i++) {
 
   const piece = new PuzzlePiece(i, pieceMesh);
   puzzlePieces.push(piece);
+}
+
+// Randomly move each piece to a random position on the board
+for (let i = 0; i < puzzlePieces.length; i++)
+{
+  puzzlePieces[i].mesh.position.x = Math.random() * 8 - 4
+  puzzlePieces[i].mesh.position.y = Math.random() * 5.5 - 2.75
+
+  puzzlePieces[i].isPlaced = false;
 }
 
 // Initializes the WebGL Renderer
