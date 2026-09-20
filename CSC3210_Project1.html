@@ -473,6 +473,15 @@ function move(event)
 // Runs when you let go of the mouse button
 function release()
 {
+  if (selectedPiece != null) {
+    for (let i = 0; i < puzzlePieces.length; i++) 
+    {
+      if (puzzlePieces[i].mesh === selectedPiece) 
+      {
+        trySnapPiece(puzzlePieces[i]);
+      }
+    }
+  }
   // Stops moving the selected piece
   selectedPiece = null;
 }
