@@ -17,6 +17,10 @@
 // Initializes the Scene
 const scene = new THREE.Scene();
 
+const puzzleGroup = new THREE.Group();
+
+scene.add(puzzleGroup);
+
 // Configures the Camera (Perspective Projection)
 // Arguments: Field of View (deg), Aspect Ratio, Near Clipping Plane, Far Clipping Plane
 const camera = new THREE.PerspectiveCamera(
@@ -294,7 +298,7 @@ for (let i = 0; i < triangleGroups.length; i++) {
   const color = new THREE.Color(Math.random(), Math.random(), Math.random());
   const pieceMesh = createPieceMesh(triangleGroups[i], color);
   pieceMesh.position.z = 0.01; // Slightly in front of the background mesh, avoids z-fighting
-  scene.add(pieceMesh);
+  puzzleGroup.add(pieceMesh);
 
   const piece = new PuzzlePiece(i, pieceMesh);
 
@@ -427,6 +431,10 @@ renderer.domElement.addEventListener("mouseup", release)
 // Runs when the mouse button is held
 function hold(event)
 {
+  if (victoryAnimation) 
+  {
+    return;
+  }
   // Conversions to Three.js coordinates
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -497,7 +505,7 @@ function release()
           if (checkWin()) 
           {
             console.log("You Win!");
-            // Start victory animation here
+            victoryAnimation = true;
           }
         }
         break;
@@ -508,10 +516,21 @@ function release()
   selectedPiece = null;
 }
 
+let victoryAnimation = false;
+
 // Renders the frame continuously
 function animate()
 {
   requestAnimationFrame(animate);
+  if (victoryAnimation) 
+  {
+    puzzleGroup.rotation.z += 0.01;
+    const pulseScale = 1 + 0.05 * Math.sin(Date.now() / 500);
+    for (let i = 0; i < puzzlePieces.length; i++) 
+    {
+      puzzlePieces[i].mesh.scale.set(pulseScale, pulseScale, 1);
+    }
+  }
   renderer.render(scene, camera);
 }
 
