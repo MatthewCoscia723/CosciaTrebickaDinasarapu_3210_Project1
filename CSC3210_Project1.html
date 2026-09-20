@@ -381,17 +381,22 @@ renderer.setClearColor(0x111111, 1.0); // Dark grey background
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
+// Event listeners for holding, moving, and releasing the mouse.
 renderer.domElement.addEventListener("mousedown", hold)
 renderer.domElement.addEventListener("mousemove", move)
 renderer.domElement.addEventListener("mouseup", release)
 
+// Runs when the mouse button is held
 function hold(event)
 {
+  // Conversions to Three.js coordinates
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
+  // Sends the ray from the camera to the mouse
   raycaster.setFromCamera(mouse, camera);
 
+  // Creates a list of all puzzle pieces
   let objects = [];
 
   for (let i = 0; i < puzzlePieces.length; i++)
@@ -399,10 +404,12 @@ function hold(event)
     objects.push(puzzlePieces[i].mesh);
   }
 
+  // Checks which puzzles are clicked with the mouse
   let intersections = raycaster.intersectObjects(objects);
   if (intersections.length > 0)
   {
-    selectedPiece = intersections[0].object;
+    // Selects the first hit piece (meaning the "top") piece on a 2D surface
+    selectedPiece = intersections[0].object; 
     // This remembers the specific place the piece was first grabbed at
     clickOffsetX = selectedPiece.position.x - intersections[0].point.x;
     clickOffsetY = selectedPiece.position.y - intersections[0].point.y;
@@ -413,39 +420,48 @@ function hold(event)
   }
 }
 
+// Runs whenever the mouse moves
 function move(event)
 {
+  // Do nothing if you don't select anything
   if (selectedPiece == null)
   {
     return;
   }
 
+  // Converts positions into Three.JS coordinates
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
+  // Sends ray from the camera to the mouse
   raycaster.setFromCamera(mouse, camera);
 
+  // Finds the distance between the plane and the mouse ray and creates a point
   let distance = -raycaster.ray.origin.z / raycaster.ray.direction.z;
 
   let point = raycaster.ray.direction.clone().multiplyScalar(distance);
   point.add(raycaster.ray.origin);
 
+  // Moves the point to that location (so no offset when moving the mouse)
   selectedPiece.position.x = point.x + clickOffsetX;
   selectedPiece.position.y = point.y + clickOffsetY;
 }
 
+// Runs when you let go of the mouse button
 function release(event)
 {
+  // Stops moving the selected piece
   selectedPiece = null;
 }
 
-// Animates the frame
+// Renders the frame continuously
 function animate()
 {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
 }
 
+// Method call to continuously render the frame.
 animate();
     </script>
 </body>
