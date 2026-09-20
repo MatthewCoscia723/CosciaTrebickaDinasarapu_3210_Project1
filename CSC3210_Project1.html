@@ -40,7 +40,7 @@ const octagon = {
 // Function that generates the 8 corner points of the octagon evenly around a circle
 function computeOctagonBoundary(octagon) {
   const points = [];
-  // For each of the 8 points of a 2D octagon, calculates x and y coordinates using a cosine and sine waves and an angle
+  // For each of the 8 points of a 2D octagon, calculates x and y coordinates using cosine, sine, and an angle
   for (let i = 0; i < 8; i++) {
     const angle = i * (2 * Math.PI / 8) + octagon.rotationOffset;
     const x = octagon.centerX + octagon.radius * Math.cos(angle);
@@ -59,7 +59,7 @@ function createOctagonBackgroundMesh() {
   // Array that stores the coordinates of every triangle vertex needed to visually make the octagon background
   const vertexList = [];
 
-  // Builds one triangle made up of 3 vertexes, 8 times
+  // Builds one triangle made up of 3 vertices, 8 times
   for (let i = 0; i < octagonBoundary.length; i++) {
     const current = octagonBoundary[i];
     const next = octagonBoundary[(i + 1) % octagonBoundary.length];
@@ -126,7 +126,7 @@ const gridResolution = 500;
 function buildFineTriangleMesh(octagon, boundary, resolution) {
   // Array that stores every small triangle inside of the octagon boundary, each as a group of 3 {x, y} points
   const triangles = [];
-  // Width and heigh of one square grid cell that is based on the bounding box of the octagon and specified resolution
+  // Width and height of one square grid cell that is based on the bounding box of the octagon and specified resolution
   const cellSize = (2 * octagon.radius) / resolution;
 
   // Iterates over every cell in a resolution x resolution grid that covers the octagon's bounding box
@@ -146,7 +146,7 @@ function buildFineTriangleMesh(octagon, boundary, resolution) {
 
       // Keeps a cell only if the center falls inside of the octagon, and splits the square cell into two triangles
       if (isPointInOctagon(center, boundary)) {
-        // Each triangle is stored as an array of 3 vertexes
+        // Each triangle is stored as an array of 3 vertices
         triangles.push([{x: x0, y: y0}, {x: x1, y: y0}, {x: x0, y: y1}]);
         triangles.push([{x: x1, y: y0}, {x: x1, y: y1}, {x: x0, y: y1}]);
       } 
@@ -162,7 +162,7 @@ const pieceCount = 15;
 
 // Function that generates pieceCount number of random points inside of the octagon, which are used to determine which triangles belong to which piece
 function generateSeedPoints(octagon, boundary, count) {
-  // Array that stores the acceptable seed points, where one seed point correspond to one puzzle piece
+  // Array that stores the acceptable seed points, where one seed point corresponds to one puzzle piece
   const seeds = [];
 
   // Keeps generating candidate seed points until enough have been found
@@ -317,10 +317,10 @@ function RandomizeInitialPieces()
     piece.mesh.geometry.computeBoundingBox();
     let box = piece.mesh.geometry.boundingBox;
 
-    // Randomly try positions until a good position (non overlapping with hexagon or other pieces) is found
+    // Randomly try positions until a good position (non overlapping with octagon or other pieces) is found
     while(!goodPosition)
     {
-      // Start with a random position (adjusted integers hand-chosen)
+      // Start with a random position within selected x and y ranges
       let x = Math.random() * 6 - 3;
       let y = Math.random() * 4 - 2;
 
@@ -371,9 +371,13 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 // Initialize as having not selected a piece
 let selectedPiece = null;
-// Offset needed so pieces don't flick immediately off hold
+// Stores the offset between the mouse and piece position
 let clickOffsetX = 0;
 let clickOffsetY = 0;
+// Flat plane that the mouse moves across when dragging
+const dragPlane = new THREE.Plane(new THREE.Vector3(0,0,1),0);
+// Stores the current mouse position on plane
+const mousePoint = new THREE.Vector3();
 
 // Initializes the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -404,11 +408,11 @@ function hold(event)
     objects.push(puzzlePieces[i].mesh);
   }
 
-  // Checks which puzzles are clicked with the mouse
+  // Checks which puzzle piece was clicked with the mouse
   let intersections = raycaster.intersectObjects(objects);
   if (intersections.length > 0)
   {
-    // Selects the first hit piece (meaning the "top") piece on a 2D surface
+    // Selects the first hit piece (meaning the "top" piece on a 2D surface)
     selectedPiece = intersections[0].object; 
     // This remembers the specific place the piece was first grabbed at
     clickOffsetX = selectedPiece.position.x - intersections[0].point.x;
@@ -436,19 +440,16 @@ function move(event)
   // Sends ray from the camera to the mouse
   raycaster.setFromCamera(mouse, camera);
 
-  // Finds the distance between the plane and the mouse ray and creates a point
-  let distance = -raycaster.ray.origin.z / raycaster.ray.direction.z;
+  // Find where the ray hits the puzzle's plane
+  raycaster.ray.intersectPlane(dragPlane, mousePoint);
 
-  let point = raycaster.ray.direction.clone().multiplyScalar(distance);
-  point.add(raycaster.ray.origin);
-
-  // Moves the point to that location (so no offset when moving the mouse)
-  selectedPiece.position.x = point.x + clickOffsetX;
-  selectedPiece.position.y = point.y + clickOffsetY;
+  // Moves the piece while accounting for the move offset
+  selectedPiece.position.x = mousePoint.x + clickOffsetX;
+  selectedPiece.position.y = mousePoint.y + clickOffsetY;
 }
 
 // Runs when you let go of the mouse button
-function release(event)
+function release()
 {
   // Stops moving the selected piece
   selectedPiece = null;
