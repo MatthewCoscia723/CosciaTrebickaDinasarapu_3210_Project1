@@ -388,6 +388,18 @@ function trySnapPiece(piece) {
   return false;
 }
 
+function checkWin() 
+{
+  for (let i = 0; i < puzzlePieces.length; i++) 
+  {
+    if (puzzlePieces[i].isPlaced == false) 
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
 // Initialize the raycasters (for mouse) and mouse variables
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
@@ -479,6 +491,7 @@ function release()
       if (puzzlePieces[i].mesh === selectedPiece) 
       {
         trySnapPiece(puzzlePieces[i]);
+        break;
       }
     }
   }
