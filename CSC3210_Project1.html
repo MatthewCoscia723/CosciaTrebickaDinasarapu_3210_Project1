@@ -373,6 +373,19 @@ RandomizeInitialPieces();
 function trySnapPiece(piece) {
   // Calculates the distance between the piece's current position and its correct home position.
   const distanceFromHome = getDistance(piece.mesh.position, piece.homePosition);
+
+  // Checks if the piece is close enough to its home position to snap into place
+  if (distanceFromHome <= snapThreshold) {
+    // Moves the piece to its exact home x & y coordinates and marks it as correctly placed.
+    piece.mesh.position.x = piece.homePosition.x;
+    piece.mesh.position.y = piece.homePosition.y;
+    piece.isPlaced = true;
+
+    // Indicates that the piece successfully snapped into place
+    return true;
+  }
+  // Indicates that the piece fails to snap into place
+  return false;
 }
 
 // Initialize the raycasters (for mouse) and mouse variables
