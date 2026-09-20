@@ -299,7 +299,7 @@ for (let i = 0; i < triangleGroups.length; i++) {
   const piece = new PuzzlePiece(i, pieceMesh);
 
   // Saves the piece's original x & y positions
-  piece.homePosition.x = pieceMesh.position.x; 
+  piece.homePosition.x = pieceMesh.position.x;
   piece.homePosition.y = pieceMesh.position.y;
 
   puzzlePieces.push(piece);
@@ -368,6 +368,12 @@ function RandomizeInitialPieces()
 }
 // Calls the method to randomize each piece position.
 RandomizeInitialPieces();
+
+// Checks whether a puzzle piece is close enough to its home position to snap into place.
+function trySnapPiece(piece) {
+  // Calculates the distance between the piece's current position and its correct home position.
+  const distanceFromHome = getDistance(piece.mesh.position, piece.homePosition);
+}
 
 // Initialize the raycasters (for mouse) and mouse variables
 const raycaster = new THREE.Raycaster();
