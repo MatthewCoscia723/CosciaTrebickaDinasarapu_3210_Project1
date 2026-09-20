@@ -115,7 +115,7 @@ function isPointInOctagon(point, boundary) {
 }
 
 // Configuration for how finely the octagon is subdivided into small triangles
-const gridResolution = 150;
+const gridResolution = 500;
 
 // Function that builds a dense array of small triangles in the octagon's interior 
 function buildFineTriangleMesh(octagon, boundary, resolution) {
@@ -153,7 +153,7 @@ function buildFineTriangleMesh(octagon, boundary, resolution) {
 const fineTriangles = buildFineTriangleMesh(octagon, octagonBoundary, gridResolution);
 
 // IMPORTANT: Configuration for how many puzzle pieces (and therefore seed points) to generate
-const pieceCount = 10;
+const pieceCount = 15;
 
 // Function that generates pieceCount number of random points inside of the octagon, which are used to determine which triangles belong to which piece
 function generateSeedPoints(octagon, boundary, count) {
@@ -234,14 +234,53 @@ function groupTrianglesBySeed(triangles, seeds) {
   return groups;
 }
 
-// 4. Initialize the WebGL Renderer
+// Function that builds one colored Mesh from a group of triangles that represents a single puzzle piece
+function createPieceMesh(triangleGroup, color) {
+  const geometry = new THREE.BufferGeometry();
+
+  // Array that stores the flattened x, y, z coordinates of every vertex in this piece's triangles
+  const vertexList = [];
+  // Flattens every point of every triangle in this group into vertexList as x, y, 0
+  for (let i = 0; i < triangleGroup.length; i++) {
+    const currentTriangle = triangleGroup[i];
+    for (let j = 0; j < 3; j++) {
+      const currentVertex = currentTriangle[j];
+      vertexList.push(currentVertex.x, currentVertex.y, 0);
+    }
+  }
+
+  // Converts the vertex list array into a more workable Float32Array
+  const vertices = new Float32Array(vertexList);
+  geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+
+  // Creates a material using this piece's randomly assigned color
+  const material = new THREE.MeshBasicMaterial({
+    color,
+    side: THREE.DoubleSide
+  });
+
+  return new THREE.Mesh(geometry, material);
+}
+
+// Groups the fine triangles into one bucket per seed point, forming the raw shape of each puzzle piece
+const triangleGroups = groupTrianglesBySeed(fineTriangles, seedPoints);
+
+// Builds and adds one mesh per piece group to the scene, each with its own randomly generated color
+for (let i = 0; i < triangleGroups.length; i++) {
+  const color = new THREE.Color(Math.random(), Math.random(), Math.random());
+  const pieceMesh = createPieceMesh(triangleGroups[i], color);
+  pieceMesh.position.z = 0.01; // Slightly in front of the background mesh, avoids z-fighting
+  scene.add(pieceMesh);
+}
+
+// Initializes the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setClearColor(0x111111, 1.0); // Dark grey background
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
-// 5. Render the Frame
+// Renders the frame
 renderer.render(scene, camera);
     </script>
 </body>
