@@ -1,6 +1,11 @@
 <html>
 <head>
     <title>CSC3210 Puzzle Pandemonium</title>
+    <style>
+        body {
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
     
@@ -373,6 +378,32 @@ renderer.setClearColor(0x111111, 1.0); // Dark grey background
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
+renderer.domElement.addEventListener("click", click)
+
+function click(event)
+{
+  mouse.x = (event.offsetX / renderer.domElement.clientWidth) * 2 - 1;
+  mouse.y = -(event.offsetY / renderer.domElement.clientHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+
+  let objects = [];
+
+  for (let i = 0; i < puzzlePieces.length; i++)
+  {
+    objects.push(puzzlePieces[i].mesh);
+  }
+
+  let intersections = raycaster.intersectObjects(objects);
+  if (intersections.length > 0)
+  {
+    console.log("Piece clicked");
+  }
+  else
+  {
+    console.log("Nothing clicked");
+  }
+}
 
 // Renders the frame
 renderer.render(scene, camera);
