@@ -137,6 +137,12 @@ function createOctagonBackgroundMesh() {
 const octagonBackgroundMesh = createOctagonBackgroundMesh();
 scene.add(octagonBackgroundMesh);
 
+const outlineGeometry = new THREE.BufferGeometry().setFromPoints(octagonBoundary.map(point => new THREE.Vector3(point.x, point.y, 0.02)));
+const outlineMaterial = new THREE.LineBasicMaterial({color: 0xffffff});
+
+const octagonOutline = new THREE.LineLoop(outlineGeometry, outlineMaterial);
+scene.add(octagonOutline);
+
 // Function that checks whether a given point is inside of the octagon
 function isPointInOctagon(point, boundary) {
   for (let i = 0; i < boundary.length; i++) {
@@ -341,7 +347,7 @@ for (let i = 0; i < triangleGroups.length; i++) {
   puzzlePieces.push(piece);
 }
 
-// Randomly move each starting piece to a random position on the board without overlap
+// Randomly move each starting piece to a outside the puzzle area without overlap
 function RandomizeInitialPieces()
 {
   // Storage for the bounding boxes
@@ -464,6 +470,13 @@ renderer.setClearColor(0x111111, 1.0); // Dark grey background
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
+// Resizes the game when the window is resized so the game doesn't get cut when resized.
+window.addEventListener("resize", function()
+{
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+})
 // Event listeners for holding, moving, and releasing the mouse.
 renderer.domElement.addEventListener("mousedown", hold)
 renderer.domElement.addEventListener("mousemove", move)
