@@ -83,7 +83,7 @@ function computeOctagonBoundary(octagon) {
     const y = octagon.centerY + octagon.radius * Math.sin(angle);
     points.push({x, y});
   }
-  return points
+  return points;
 }
 
 const octagonBoundary = computeOctagonBoundary(octagon);
@@ -202,7 +202,7 @@ const fineTriangles = buildFineTriangleMesh(octagon, octagonBoundary, gridResolu
 // IMPORTANT: Configuration for how many puzzle pieces (and therefore seed points) to generate
 const pieceCount = 15;
 
-// Max distance a puzzle can be form its home position to snap into place.
+// Max distance a puzzle can be from its home position to snap into place.
 const snapThreshold = 0.15;
 
 // Function that generates pieceCount number of random points inside of the octagon, which are used to determine which triangles belong to which piece
@@ -340,15 +340,15 @@ for (let i = 0; i < triangleGroups.length; i++) {
 
   const piece = new PuzzlePiece(i, pieceMesh);
 
-  // Saves the piece's original x & y positions
+  // Saves the piece's correct x & y positions
   piece.homePosition.x = pieceMesh.position.x;
   piece.homePosition.y = pieceMesh.position.y;
 
   puzzlePieces.push(piece);
 }
 
-// Randomly move each starting piece to a outside the puzzle area without overlap
-function RandomizeInitialPieces()
+// Randomly move each starting piece to a position outside the puzzle area without overlap
+function randomizeInitialPieces()
 {
   // Storage for the bounding boxes
   let boxes = [];
@@ -371,23 +371,12 @@ function RandomizeInitialPieces()
 
       piece.mesh.position.x = x;
       piece.mesh.position.y = y;
-
-      // Gets the corners of the bounding box for the piece
-      let corners = [
-      {x: x + box.min.x, y: y + box.min.y},
-      {x: x + box.min.x, y: y + box.max.y},
-      {x: x + box.max.x, y: y + box.min.y},
-      {x: x + box.max.x, y: y + box.max.y}
-                    ];
     // Assume position is valid until we test it's not
     goodPosition = true;
-    // If any corner of the bounding box is in the octagon, it's not a good position
-    for (let j = 0; j < corners.length; j++)
+    // If any pieces bounding box overlaps the octagons bounding box, it's a bad position.
+    if (x + box.min.x < octagon.radius && x + box.max.x > -octagon.radius && y + box.min.y < octagon.radius && y + box.max.y > -octagon.radius)
     {
-      if (isPointInOctagon(corners[j], octagonBoundary))
-      {
-        goodPosition = false;
-      }
+      goodPosition =false;
     }
     // Check if a certain piece's box overlaps with any other piece's box
     for (let j = 0; j < boxes.length && goodPosition; j++)
@@ -409,7 +398,7 @@ function RandomizeInitialPieces()
   }
 }
 // Calls the method to randomize each piece position.
-RandomizeInitialPieces();
+randomizeInitialPieces();
 
 // Checks whether a puzzle piece is close enough to its home position to snap into place.
 function trySnapPiece(piece) {
@@ -509,7 +498,10 @@ function hold(event)
 
   for (let i = 0; i < puzzlePieces.length; i++)
   {
+    if (puzzlePieces[i].isPlaced == false)
+    {
     objects.push(puzzlePieces[i].mesh);
+    }
   }
 
   // Checks which puzzle piece was clicked with the mouse
@@ -517,12 +509,20 @@ function hold(event)
   if (intersections.length > 0)
   {
     // Selects the first hit piece (meaning the "top" piece on a 2D surface)
-    selectedPiece = intersections[0].object; 
-    // This remembers the specific place the piece was first grabbed at
-    clickOffsetX = selectedPiece.position.x - intersections[0].point.x;
-    clickOffsetY = selectedPiece.position.y - intersections[0].point.y;
-    clickSound.currentTime = 0;
-    clickSound.play();
+    for (let i = 0; i < puzzlePieces.length; i++)
+    { 
+      if (puzzlePieces[i].mesh === intersections[0].object && puzzlePieces[i].isPlaced == false)
+      {
+        selectedPiece = intersections[0].object;
+        // Stores the offset values of the x and y positions of the mouse
+        clickOffsetX = selectedPiece.position.x - intersections[0].point.x;
+        clickOffsetY = selectedPiece.position.y - intersections[0].point.y;
+        // Plays the sound when the piece snaps into place
+        clickSound.currentTime = 0;
+        clickSound.play();
+        break;
+      }
+    } 
   }
   else
   {
