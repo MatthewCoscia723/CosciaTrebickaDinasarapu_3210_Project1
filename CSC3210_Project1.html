@@ -513,7 +513,7 @@ function hold(event)
   }
 
   // Checks which puzzle piece was clicked with the mouse
-  let intersections = raycaster.intersectObjects(objects);
+  let intersections = raycaster.intersectObjects(objects, true);
   if (intersections.length > 0)
   {
     // Selects the first hit piece (meaning the "top" piece on a 2D surface)
