@@ -5,9 +5,41 @@
         body {
             margin: 0;
         }
+        #winMessage {
+          display: none;
+          
+          position: fixed;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 64px;
+          color: darkorange;
+          z-index: 10;
+          animation: sparkle 0.8s infinite alternate;
+        }
+
+        @keyframes sparkle {
+          from {
+            text-shadow: 
+                0 0 5px orange,
+                0 0 10px orange,
+                0 0 20px #ff6600;
+
+          }
+          to {
+            text-shadow: 
+              0 0 10px orange,
+              0 0 20px orange,
+              0 0 40px #ff6600;
+
+          }
+        }
     </style>
 </head>
 <body>
+  <div id="winMessage">
+    You Win!
+  </div>
     
   <!-- Three.js Dependencies -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -527,7 +559,7 @@ function release()
           {
             victorySound.currentTime = 0;
             victorySound.play();
-            console.log("You Win!");
+            document.getElementById("winMessage").style.display = "block";
             victoryAnimation = true;
           }
         }
