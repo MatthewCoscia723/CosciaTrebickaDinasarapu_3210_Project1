@@ -363,11 +363,14 @@ function randomizeInitialPieces()
     let box = piece.mesh.geometry.boundingBox;
 
     // Randomly try positions until a good position (non overlapping with octagon or other pieces) is found
-    while(!goodPosition)
+    let attempts = 0;
+    const maxAttempts = 25000;
+    while(!goodPosition && attempts < maxAttempts)
     {
+      attempts++;
       // Start with a random position within selected x and y ranges
-      let x = Math.random() * 6 - 3;
-      let y = Math.random() * 4 - 2;
+      let x = Math.random() * 8 - 4;
+      let y = Math.random() * 3 - 1.5;
 
       piece.mesh.position.x = x;
       piece.mesh.position.y = y;
@@ -392,6 +395,11 @@ function randomizeInitialPieces()
       {
         boxes.push({minX: x + box.min.x, maxX: x + box.max.x, minY: y + box.min.y, maxY: y + box.max.y});
       }
+    }
+    if (!goodPosition)
+    {
+      randomizeInitialPieces();
+      return;
     }
     // Make sure piece's initial position is tracked as not placed correctly.
     piece.isPlaced = false; 
